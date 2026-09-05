@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>CodeIntelligence</title>
+
+    <link
+            rel="stylesheet"
+            href="/static/style.css"
+    >
+    <script
+            type="module">
+        import mermaid
+            from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+
+        mermaid.initialize({
+            startOnLoad: false
+        });
+
+        window.mermaid = mermaid;
+    </script>
+</head>
+
+<body>
+
+<div class="page">
+
+    <header class="header">
+
+        <div>
+            <h1>CodeIntelligence</h1>
+            <p>
+                Java Flow, Defect and Regression Analysis
+            </p>
+        </div>
+
+        <div
+                id="healthStatus"
+                class="status-badge"
+        >
+            Checking...
+        </div>
+
+    </header>
+
+
+    <main class="content">
+
+        <section class="card">
+
+            <div class="card-header">
+                <div>
+                    <h2>Scenario Registry</h2>
+                    <p>
+                        Registered application scenarios
+                    </p>
+                </div>
+
+                <button
+                        onclick="loadScenarios()"
+                >
+                    Refresh
+                </button>
+            </div>
+
+            <div
+                    id="scenarioList"
+                    class="result-area"
+            >
+                Loading scenarios...
+            </div>
+
+        </section>
+
+
+        <section class="card">
+
+            <div class="card-header">
+                <div>
+                    <h2>Endpoint Flow</h2>
+                    <p>
+                        Understand how an API travels through Java code
+                    </p>
+                </div>
+            </div>
+
+            <div class="form-row">
+
+                <select id="flowMethod">
+                    <option value="GET">GET</option>
+                    <option value="POST" selected>POST</option>
+                    <option value="PUT">PUT</option>
+                    <option value="PATCH">PATCH</option>
+                    <option value="DELETE">DELETE</option>
+                </select>
+
+                <input
+                        id="flowEndpoint"
+                        value="/api/employees"
+                        placeholder="/api/employees"
+                >
+
+                <button
+                        onclick="analyseEndpointFlow()"
+                >
+                    Analyse Flow
+                </button>
+
+            </div>
+
+            <div
+                    id="flowResult"
+                    class="result-area"
+            >
+                Enter an endpoint and click Analyse Flow.
+            </div>
+
+        </section>
+
+        <section class="card">
+
+            <div class="card-header">
+
+                <div>
+                    <h2>Scenario Flowchart</h2>
+
+                    <p>
+                        Visualize the Java execution path
+                    </p>
+                </div>
+
+            </div>
+
+            <div class="form-row">
+
+                <select id="chartMethod">
+
+                    <option value="GET">
+                        GET
+                    </option>
+
+                    <option
+                            value="POST"
+                            selected
+                    >
+                        POST
+                    </option>
+
+                    <option value="PUT">
+                        PUT
+                    </option>
+
+                    <option value="PATCH">
+                        PATCH
+                    </option>
+
+                    <option value="DELETE">
+                        DELETE
+                    </option>
+
+                </select>
+
+                <input
+                        id="chartEndpoint"
+                        value="/api/employees"
+                        placeholder="/api/employees"
+                >
+
+                <button
+                        onclick="generateFlowchart()"
+                >
+                    Generate Flowchart
+                </button>
+
+            </div>
+
+            <div
+                    id="flowchartResult"
+                    class="result-area"
+            >
+                Generate a scenario flowchart.
+            </div>
+
+        </section>
+        <section class="card">
+
+            <div class="card-header">
+                <div>
+                    <h2>Defect Investigation</h2>
+                    <p>
+                        Compare expected vs actual response and trace affected attributes
+                    </p>
+                </div>
+            </div>
+
+            <div class="form-row">
+
+                <select id="investigationMethod">
+                    <option value="GET">GET</option>
+                    <option value="POST" selected>POST</option>
+                    <option value="PUT">PUT</option>
+                    <option value="PATCH">PATCH</option>
+                    <option value="DELETE">DELETE</option>
+                </select>
+
+                <input
+                        id="investigationEndpoint"
+                        value="/api/employees"
+                        placeholder="/api/employees"
+                >
+
+            </div>
+
+            <div class="json-grid">
+
+                <div>
+                    <label>Expected JSON</label>
+
+                    <textarea
+                            id="expectedJson"
+                    >{
+  "employeeCode": "EMP100",
+  "emailDetails": {
+    "primaryEmail": "raju@test.com"
+  },
+  "phoneContactDetails": {
+    "primaryContact": "9999999999"
+  }
+}</textarea>
+                </div>
+
+                <div>
+                    <label>Actual JSON</label>
+
+                    <textarea
+                            id="actualJson"
+                    >{
+  "employeeCode": "EMP100",
+  "emailDetails": {
+    "primaryEmail": null
+  },
+  "phoneContactDetails": {
+    "primaryContact": null
+  }
+}</textarea>
+                </div>
+
+            </div>
+
+            <button
+                    onclick="runInvestigation()"
+            >
+                Investigate Defect
+            </button>
+
+            <div
+                    id="investigationResult"
+                    class="result-area"
+            >
+                Investigation result will appear here.
+            </div>
+
+        </section>
+
+
+        <section class="card">
+
+            <div class="card-header">
+                <div>
+                    <h2>Regression Impact</h2>
+                    <p>
+                        Analyse current Git changes against scenario baselines
+                    </p>
+                </div>
+
+                <button
+                        onclick="analyseRegression()"
+                >
+                    Analyse Changes
+                </button>
+
+            </div>
+
+            <div
+                    id="regressionResult"
+                    class="result-area"
+            >
+                No regression analysis run yet.
+            </div>
+
+        </section>
+
+
+        <section class="card">
+
+            <div class="card-header">
+
+                <div>
+                    <h2>Baseline History</h2>
+                    <p>
+                        View historical versions of a registered scenario
+                    </p>
+                </div>
+
+            </div>
+
+            <div class="form-row">
+
+                <input
+                        id="baselineScenarioId"
+                        type="number"
+                        value="1"
+                        min="1"
+                        placeholder="Scenario ID"
+                >
+
+                <button
+                        onclick="loadBaselineHistory()"
+                >
+                    Load History
+                </button>
+
+            </div>
+
+            <div
+                    id="baselineResult"
+                    class="result-area"
+            >
+                Select a scenario.
+            </div>
+
+        </section>
+
+    </main>
+
+</div>
+
+<script src="/static/app.js"></script>
+
+</body>
+</html>
