@@ -8,10 +8,10 @@
 
     <link
             rel="stylesheet"
-            href="/static/style.css"
+            href="/static/style.css?v=4"
     >
-    <script
-            type="module">
+
+    <script type="module">
         import mermaid
             from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
 
@@ -31,6 +31,7 @@
 
         <div>
             <h1>CodeIntelligence</h1>
+
             <p>
                 Java Flow, Defect and Regression Analysis
             </p>
@@ -48,14 +49,25 @@
 
     <main class="content">
 
+
+        <!-- ====================================================== -->
+        <!-- SCENARIO REGISTRY -->
+        <!-- ====================================================== -->
+
         <section class="card">
 
             <div class="card-header">
+
                 <div>
-                    <h2>Scenario Registry</h2>
+
+                    <h2>
+                        Scenario Registry
+                    </h2>
+
                     <p>
                         Registered application scenarios
                     </p>
+
                 </div>
 
                 <button
@@ -63,6 +75,7 @@
                 >
                     Refresh
                 </button>
+
             </div>
 
             <div
@@ -75,32 +88,67 @@
         </section>
 
 
+        <!-- ====================================================== -->
+        <!-- ENDPOINT FLOW -->
+        <!-- ====================================================== -->
+
         <section class="card">
 
             <div class="card-header">
+
                 <div>
-                    <h2>Endpoint Flow</h2>
+
+                    <h2>
+                        Endpoint Flow
+                    </h2>
+
                     <p>
                         Understand how an API travels through Java code
                     </p>
+
                 </div>
+
             </div>
+
 
             <div class="form-row">
 
                 <select id="flowMethod">
-                    <option value="GET">GET</option>
-                    <option value="POST" selected>POST</option>
-                    <option value="PUT">PUT</option>
-                    <option value="PATCH">PATCH</option>
-                    <option value="DELETE">DELETE</option>
+
+                    <option value="GET">
+                        GET
+                    </option>
+
+                    <option
+                            value="POST"
+                            selected
+                    >
+                        POST
+                    </option>
+
+                    <option value="PUT">
+                        PUT
+                    </option>
+
+                    <option value="PATCH">
+                        PATCH
+                    </option>
+
+                    <option value="DELETE">
+                        DELETE
+                    </option>
+
                 </select>
 
-                <input
-                        id="flowEndpoint"
-                        value="/api/employees"
-                        placeholder="/api/employees"
-                >
+
+                <select id="flowEndpoint">
+
+                    <option value="">
+                        Loading endpoints...
+                    </option>
+
+                </select>
+
 
                 <button
                         onclick="analyseEndpointFlow()"
@@ -110,28 +158,39 @@
 
             </div>
 
+
             <div
                     id="flowResult"
                     class="result-area"
             >
-                Enter an endpoint and click Analyse Flow.
+                Select an endpoint and click Analyse Flow.
             </div>
 
         </section>
+
+
+        <!-- ====================================================== -->
+        <!-- SCENARIO FLOWCHART -->
+        <!-- ====================================================== -->
 
         <section class="card">
 
             <div class="card-header">
 
                 <div>
-                    <h2>Scenario Flowchart</h2>
+
+                    <h2>
+                        Scenario Flowchart
+                    </h2>
 
                     <p>
                         Visualize the Java execution path
                     </p>
+
                 </div>
 
             </div>
+
 
             <div class="form-row">
 
@@ -162,11 +221,15 @@
 
                 </select>
 
-                <input
-                        id="chartEndpoint"
-                        value="/api/employees"
-                        placeholder="/api/employees"
-                >
+
+                <select id="chartEndpoint">
+
+                    <option value="">
+                        Loading endpoints...
+                    </option>
+
+                </select>
+
 
                 <button
                         onclick="generateFlowchart()"
@@ -176,6 +239,7 @@
 
             </div>
 
+
             <div
                     id="flowchartResult"
                     class="result-area"
@@ -184,39 +248,81 @@
             </div>
 
         </section>
+
+
+        <!-- ====================================================== -->
+        <!-- DEFECT INVESTIGATION -->
+        <!-- ====================================================== -->
+
         <section class="card">
 
             <div class="card-header">
+
                 <div>
-                    <h2>Defect Investigation</h2>
+
+                    <h2>
+                        Defect Investigation
+                    </h2>
+
                     <p>
-                        Compare expected vs actual response and trace affected attributes
+                        Compare expected vs actual response
+                        and trace affected attributes
                     </p>
+
                 </div>
+
             </div>
+
 
             <div class="form-row">
 
                 <select id="investigationMethod">
-                    <option value="GET">GET</option>
-                    <option value="POST" selected>POST</option>
-                    <option value="PUT">PUT</option>
-                    <option value="PATCH">PATCH</option>
-                    <option value="DELETE">DELETE</option>
+
+                    <option value="GET">
+                        GET
+                    </option>
+
+                    <option
+                            value="POST"
+                            selected
+                    >
+                        POST
+                    </option>
+
+                    <option value="PUT">
+                        PUT
+                    </option>
+
+                    <option value="PATCH">
+                        PATCH
+                    </option>
+
+                    <option value="DELETE">
+                        DELETE
+                    </option>
+
                 </select>
 
-                <input
-                        id="investigationEndpoint"
-                        value="/api/employees"
-                        placeholder="/api/employees"
-                >
+
+                <select id="investigationEndpoint">
+
+                    <option value="">
+                        Loading endpoints...
+                    </option>
+
+                </select>
 
             </div>
 
+
             <div class="json-grid">
 
+
                 <div>
-                    <label>Expected JSON</label>
+
+                    <label>
+                        Expected JSON
+                    </label>
 
                     <textarea
                             id="expectedJson"
@@ -229,10 +335,15 @@
     "primaryContact": "9999999999"
   }
 }</textarea>
+
                 </div>
 
+
                 <div>
-                    <label>Actual JSON</label>
+
+                    <label>
+                        Actual JSON
+                    </label>
 
                     <textarea
                             id="actualJson"
@@ -245,15 +356,19 @@
     "primaryContact": null
   }
 }</textarea>
+
                 </div>
 
+
             </div>
+
 
             <button
                     onclick="runInvestigation()"
             >
                 Investigate Defect
             </button>
+
 
             <div
                     id="investigationResult"
@@ -265,15 +380,27 @@
         </section>
 
 
+        <!-- ====================================================== -->
+        <!-- REGRESSION IMPACT -->
+        <!-- ====================================================== -->
+
         <section class="card">
 
             <div class="card-header">
+
                 <div>
-                    <h2>Regression Impact</h2>
+
+                    <h2>
+                        Regression Impact
+                    </h2>
+
                     <p>
-                        Analyse current Git changes against scenario baselines
+                        Analyse current Git changes
+                        against scenario baselines
                     </p>
+
                 </div>
+
 
                 <button
                         onclick="analyseRegression()"
@@ -282,6 +409,7 @@
                 </button>
 
             </div>
+
 
             <div
                     id="regressionResult"
@@ -293,18 +421,29 @@
         </section>
 
 
+        <!-- ====================================================== -->
+        <!-- BASELINE HISTORY -->
+        <!-- ====================================================== -->
+
         <section class="card">
 
             <div class="card-header">
 
                 <div>
-                    <h2>Baseline History</h2>
+
+                    <h2>
+                        Baseline History
+                    </h2>
+
                     <p>
-                        View historical versions of a registered scenario
+                        View historical versions
+                        of a registered scenario
                     </p>
+
                 </div>
 
             </div>
+
 
             <div class="form-row">
 
@@ -316,6 +455,7 @@
                         placeholder="Scenario ID"
                 >
 
+
                 <button
                         onclick="loadBaselineHistory()"
                 >
@@ -323,6 +463,7 @@
                 </button>
 
             </div>
+
 
             <div
                     id="baselineResult"
@@ -333,11 +474,15 @@
 
         </section>
 
+
     </main>
 
 </div>
 
-<script src="/static/app.js"></script>
+
+<script
+        src="/static/app.js?v=4"
+></script>
 
 </body>
 </html>

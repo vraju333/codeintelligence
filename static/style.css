@@ -112,6 +112,11 @@ select {
     min-width: 110px;
 }
 
+#flowEndpoint,
+#chartEndpoint {
+    flex: 1;
+}
+
 textarea {
     width: 100%;
     min-height: 230px;

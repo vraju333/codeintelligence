@@ -1,10 +1,350 @@
+let discoveredEndpoints = [];
+
+
 document.addEventListener(
     "DOMContentLoaded",
-    () => {
+    async () => {
+
         checkHealth();
         loadScenarios();
+
+        document
+            .getElementById("flowMethod")
+            .addEventListener(
+                "change",
+                () => {
+                    refreshEndpointDropdown(
+                        "flowMethod",
+                        "flowEndpoint"
+                    );
+                }
+            );
+
+        document
+            .getElementById("chartMethod")
+            .addEventListener(
+                "change",
+                () => {
+                    refreshEndpointDropdown(
+                        "chartMethod",
+                        "chartEndpoint"
+                    );
+                }
+            );
+
+        document
+            .getElementById("investigationMethod")
+            .addEventListener(
+                "change",
+                () => {
+                    refreshEndpointDropdown(
+                        "investigationMethod",
+                        "investigationEndpoint"
+                    );
+                }
+            );
+
+        await loadProjectEndpoints();
     }
 );
+
+
+async function loadProjectEndpoints() {
+
+    try {
+
+        const response =
+            await fetch(
+                "/api/endpoint-flow/endpoints"
+            );
+
+        const data =
+            await response.json();
+
+        if (!response.ok) {
+            throw new Error(
+                JSON.stringify(data)
+            );
+        }
+
+        if (Array.isArray(data)) {
+
+            discoveredEndpoints =
+                data;
+
+        } else if (
+            Array.isArray(
+                data.endpoints
+            )
+        ) {
+
+            discoveredEndpoints =
+                data.endpoints;
+
+        } else {
+
+            discoveredEndpoints =
+                [];
+        }
+
+        refreshEndpointDropdown(
+            "flowMethod",
+            "flowEndpoint"
+        );
+
+        refreshEndpointDropdown(
+            "chartMethod",
+            "chartEndpoint"
+        );
+
+        refreshEndpointDropdown(
+            "investigationMethod",
+            "investigationEndpoint"
+        );
+
+    } catch (error) {
+
+        console.error(
+            "Failed to load endpoints",
+            error
+        );
+
+        showEndpointLoadError(
+            "flowEndpoint"
+        );
+
+        showEndpointLoadError(
+            "chartEndpoint"
+        );
+
+        showEndpointLoadError(
+            "investigationEndpoint"
+        );
+    }
+}
+
+
+function refreshEndpointDropdown(
+    methodElementId,
+    endpointElementId
+) {
+
+    const methodElement =
+        document.getElementById(
+            methodElementId
+        );
+
+    const endpointSelect =
+        document.getElementById(
+            endpointElementId
+        );
+
+    if (
+        !methodElement ||
+        !endpointSelect
+    ) {
+        return;
+    }
+
+    const selectedMethod =
+        String(
+            methodElement.value
+        ).toUpperCase();
+
+    const matchingEndpoints =
+        discoveredEndpoints
+            .filter(
+                item => {
+
+                    const method =
+                        String(
+                            item.http_method
+                            ||
+                            item.httpMethod
+                            ||
+                            item.method
+                            ||
+                            item.request_method
+                            ||
+                            ""
+                        ).toUpperCase();
+
+                    return (
+                        method ===
+                        selectedMethod
+                    );
+                }
+            )
+            .sort(
+                (
+                    first,
+                    second
+                ) => {
+
+                    return getEndpointPath(
+                        first
+                    ).localeCompare(
+                        getEndpointPath(
+                            second
+                        )
+                    );
+                }
+            );
+
+    endpointSelect.innerHTML =
+        "";
+
+    if (
+        matchingEndpoints.length ===
+        0
+    ) {
+
+        const option =
+            document.createElement(
+                "option"
+            );
+
+        option.value =
+            "";
+
+        option.textContent =
+            "No "
+            + selectedMethod
+            + " endpoints found";
+
+        endpointSelect.appendChild(
+            option
+        );
+
+        return;
+    }
+
+    for (
+        const item
+        of matchingEndpoints
+    ) {
+
+        const endpoint =
+            getEndpointPath(
+                item
+            );
+
+        if (!endpoint) {
+            continue;
+        }
+
+        const controller =
+            item.controller
+            || {};
+
+        const controllerClass =
+            item.controller_class
+            ||
+            item.controllerClass
+            ||
+            item.class_name
+            ||
+            controller.class_name
+            ||
+            controller.className
+            ||
+            "";
+
+        const controllerMethod =
+            item.controller_method
+            ||
+            item.controllerMethod
+            ||
+            item.method_name
+            ||
+            controller.method_name
+            ||
+            controller.methodName
+            ||
+            "";
+
+        const option =
+            document.createElement(
+                "option"
+            );
+
+        option.value =
+            endpoint;
+
+        if (
+            controllerClass &&
+            controllerMethod
+        ) {
+
+            option.textContent =
+                endpoint
+                + " — "
+                + controllerClass
+                + "."
+                + controllerMethod;
+
+        } else {
+
+            option.textContent =
+                endpoint;
+        }
+
+        endpointSelect.appendChild(
+            option
+        );
+    }
+}
+
+
+function getEndpointPath(
+    item
+) {
+
+    return (
+        item.endpoint
+        ||
+        item.path
+        ||
+        item.url
+        ||
+        item.request_path
+        ||
+        ""
+    );
+}
+
+
+function showEndpointLoadError(
+    endpointElementId
+) {
+
+    const endpointSelect =
+        document.getElementById(
+            endpointElementId
+        );
+
+    if (!endpointSelect) {
+        return;
+    }
+
+    endpointSelect.innerHTML =
+        "";
+
+    const option =
+        document.createElement(
+            "option"
+        );
+
+    option.value =
+        "";
+
+    option.textContent =
+        "Unable to load endpoints";
+
+    endpointSelect.appendChild(
+        option
+    );
+}
 
 
 async function checkHealth() {
@@ -17,7 +357,9 @@ async function checkHealth() {
     try {
 
         const response =
-            await fetch("/health");
+            await fetch(
+                "/health"
+            );
 
         if (!response.ok) {
             throw new Error(
@@ -63,6 +405,7 @@ async function loadScenarios() {
             await response.json();
 
         if (!response.ok) {
+
             throw new Error(
                 JSON.stringify(
                     scenarios
@@ -73,7 +416,8 @@ async function loadScenarios() {
         if (
             !Array.isArray(
                 scenarios
-            ) ||
+            )
+            ||
             scenarios.length === 0
         ) {
 
@@ -90,39 +434,53 @@ async function loadScenarios() {
                         <div class="scenario">
 
                             <div class="method">
+
                                 ${escapeHtml(
                                     scenario.http_method
                                 )}
+
                             </div>
 
                             <div>
+
                                 <strong>
+
                                     ${escapeHtml(
                                         scenario.scenario_code
                                     )}
+
                                 </strong>
 
                                 <div>
+
                                     ${escapeHtml(
                                         scenario.scenario_name
                                         || ""
                                     )}
+
                                 </div>
+
                             </div>
 
                             <div class="endpoint">
+
                                 ${escapeHtml(
                                     scenario.endpoint
                                 )}
+
                             </div>
 
                             <div>
+
                                 <span class="tag">
+
                                     ${escapeHtml(
                                         scenario.status
                                         || "ACTIVE"
                                     )}
+
                                 </span>
+
                             </div>
 
                         </div>
@@ -150,12 +508,22 @@ async function analyseEndpointFlow() {
     const endpoint =
         document.getElementById(
             "flowEndpoint"
-        ).value.trim();
+        ).value;
 
     const container =
         document.getElementById(
             "flowResult"
         );
+
+    if (!endpoint) {
+
+        container.innerHTML =
+            renderError(
+                "Please select an endpoint."
+            );
+
+        return;
+    }
 
     container.innerHTML =
         "Analysing...";
@@ -174,7 +542,9 @@ async function analyseEndpointFlow() {
             );
 
         const response =
-            await fetch(url);
+            await fetch(
+                url
+            );
 
         const data =
             await response.json();
@@ -182,7 +552,9 @@ async function analyseEndpointFlow() {
         if (!response.ok) {
 
             throw new Error(
-                JSON.stringify(data)
+                JSON.stringify(
+                    data
+                )
             );
         }
 
@@ -190,18 +562,22 @@ async function analyseEndpointFlow() {
             data.simplified_flow
             || [];
 
-        if (flow.length === 0) {
+        if (
+            flow.length === 0
+        ) {
 
             container.innerHTML =
                 "<pre>"
-                + escapeHtml(
+                +
+                escapeHtml(
                     JSON.stringify(
                         data,
                         null,
                         2
                     )
                 )
-                + "</pre>";
+                +
+                "</pre>";
 
             return;
         }
@@ -209,6 +585,7 @@ async function analyseEndpointFlow() {
         container.innerHTML =
             `
             <div class="flow-list">
+
                 ${
                     flow
                         .map(
@@ -221,20 +598,28 @@ async function analyseEndpointFlow() {
                                     index ===
                                     flow.length - 1
                                     ? ""
-                                    : `<div class="flow-arrow">↓</div>`;
+                                    : `
+                                        <div class="flow-arrow">
+                                            ↓
+                                        </div>
+                                    `;
 
                                 return `
                                     <div class="flow-step">
+
                                         ${escapeHtml(
                                             step
                                         )}
+
                                     </div>
+
                                     ${arrow}
                                 `;
                             }
                         )
                         .join("")
                 }
+
             </div>
             `;
 
@@ -258,12 +643,22 @@ async function runInvestigation() {
     const endpoint =
         document.getElementById(
             "investigationEndpoint"
-        ).value.trim();
+        ).value;
 
     const container =
         document.getElementById(
             "investigationResult"
         );
+
+    if (!endpoint) {
+
+        container.innerHTML =
+            renderError(
+                "Please select an endpoint."
+            );
+
+        return;
+    }
 
     let expected;
     let actual;
@@ -314,19 +709,24 @@ async function runInvestigation() {
             await fetch(
                 url,
                 {
-                    method: "POST",
+                    method:
+                        "POST",
+
                     headers: {
                         "Content-Type":
                             "application/json"
                     },
-                    body: JSON.stringify(
-                        {
-                            expected:
-                                expected,
-                            actual:
-                                actual
-                        }
-                    )
+
+                    body:
+                        JSON.stringify(
+                            {
+                                expected:
+                                    expected,
+
+                                actual:
+                                    actual
+                            }
+                        )
                 }
             );
 
@@ -367,15 +767,8 @@ function renderInvestigation(
 
     const attributes =
         data.affected_attributes
-        || data.final_result
-            ?.affected_attributes
-        || [];
-
-    const locations =
-        data.likely_code_locations
-        || data.final_result
-            ?.likely_code_locations
-        || {};
+        ||
+        [];
 
     let html =
         `
@@ -387,54 +780,77 @@ function renderInvestigation(
             : "success"
         }">
 
-            <strong>Status:</strong>
-            ${escapeHtml(status)}
+            <strong>
+                Status:
+            </strong>
+
+            ${escapeHtml(
+                status
+            )}
 
         </div>
         `;
 
-    if (attributes.length > 0) {
-
-        html +=
-            `
-            <h3>Affected Attributes</h3>
-
-            <p>
-                ${attributes
-                    .map(
-                        value =>
-                            `<span class="tag">
-                                ${escapeHtml(
-                                    value
-                                )}
-                            </span>`
-                    )
-                    .join(" ")
-                }
-            </p>
-            `;
-    }
-
-    for (
-        const [
-            attribute,
-            entries
-        ]
-        of Object.entries(
-            locations
-        )
+    if (
+        attributes.length > 0
     ) {
 
         html +=
             `
             <h3>
-                ${escapeHtml(attribute)}
+                Affected Attributes
+            </h3>
+
+            <p>
+
+                ${
+                    attributes
+                        .map(
+                            value => `
+                                <span class="tag">
+
+                                    ${escapeHtml(
+                                        value
+                                    )}
+
+                                </span>
+                            `
+                        )
+                        .join(" ")
+                }
+
+            </p>
+            `;
+    }
+
+    const investigations =
+        data.investigations
+        || [];
+
+    for (
+        const investigation
+        of investigations
+    ) {
+
+        html +=
+            `
+            <h3>
+
+                ${escapeHtml(
+                    investigation.attribute
+                )}
+
             </h3>
             `;
 
+        const locations =
+            investigation
+                .likely_code_locations
+            || [];
+
         for (
-            const entry
-            of entries
+            const location
+            of locations
         ) {
 
             html +=
@@ -442,21 +858,87 @@ function renderInvestigation(
                 <div class="code-location">
 
                     ${escapeHtml(
-                        entry.class_name
+                        location.class_name
                         || ""
                     )}.${escapeHtml(
-                        entry.method_name
+                        location.method_name
                         || ""
                     )}
 
                     ${
-                        entry.line_number
+                        location.line_number
                         ? ` — line ${
-                            entry.line_number
+                            location.line_number
                         }`
                         : ""
                     }
 
+                    ${
+                        location.usage_type
+                        ? ` — ${
+                            escapeHtml(
+                                location.usage_type
+                            )
+                        }`
+                        : ""
+                    }
+
+                </div>
+                `;
+        }
+
+        const trace =
+            investigation.trace
+                ?.trace
+            || [];
+
+        if (
+            trace.length > 0
+        ) {
+
+            html +=
+                `
+                <h3>
+                    Attribute Trace
+                </h3>
+
+                <div class="flow-list">
+                `;
+
+            trace.forEach(
+                (
+                    step,
+                    index
+                ) => {
+
+                    html +=
+                        `
+                        <div class="flow-step">
+
+                            ${escapeHtml(
+                                step.label
+                            )}
+
+                        </div>
+                        `;
+
+                    if (
+                        index <
+                        trace.length - 1
+                    ) {
+
+                        html +=
+                            `
+                            <div class="flow-arrow">
+                                ↓
+                            </div>
+                            `;
+                    }
+                }
+            );
+
+            html +=
+                `
                 </div>
                 `;
         }
@@ -465,6 +947,7 @@ function renderInvestigation(
     html +=
         `
         <details>
+
             <summary>
                 Full Investigation JSON
             </summary>
@@ -478,6 +961,7 @@ ${escapeHtml(
     )
 )}
             </pre>
+
         </details>
         `;
 
@@ -550,18 +1034,23 @@ function renderRegression(
         <div class="warning">
 
             <strong>
+
                 ${escapeHtml(
                     data.status
                     || "CHANGES_DETECTED"
                 )}
+
             </strong>
 
             <div>
+
                 Changed Java files:
+
                 ${
                     data.total_changed_java_files
                     || 0
                 }
+
             </div>
 
         </div>
@@ -571,7 +1060,9 @@ function renderRegression(
         data.changed_methods
         || [];
 
-    if (methods.length > 0) {
+    if (
+        methods.length > 0
+    ) {
 
         html +=
             "<h3>Changed Methods</h3>";
@@ -593,10 +1084,10 @@ function renderRegression(
 
                     ${
                         method.changed_lines
-                        ?.length
+                            ?.length
                         ? ` — lines ${
                             method.changed_lines
-                            .join(", ")
+                                .join(", ")
                         }`
                         : ""
                     }
@@ -617,8 +1108,10 @@ function renderRegression(
         html +=
             `
             <div class="success">
+
                 No registered scenario baseline
                 currently matches the changed classes.
+
             </div>
             `;
 
@@ -638,36 +1131,39 @@ function renderRegression(
             <div class="danger">
 
                 <strong>
+
                     ${escapeHtml(
                         scenario.scenario_code
                     )}
+
                 </strong>
 
                 <div>
-                    ${
-                        escapeHtml(
-                            scenario.http_method
-                        )
-                    }
-                    ${
-                        escapeHtml(
-                            scenario.endpoint
-                        )
-                    }
+
+                    ${escapeHtml(
+                        scenario.http_method
+                    )}
+
+                    ${escapeHtml(
+                        scenario.endpoint
+                    )}
+
                 </div>
 
                 <div>
-                    ${
-                        escapeHtml(
-                            scenario.impact_status
-                        )
-                    }
+
+                    ${escapeHtml(
+                        scenario.impact_status
+                    )}
+
                 </div>
 
                 <div>
+
                     Baseline V${
                         scenario.baseline_version
                     }
+
                 </div>
 
             </div>
@@ -715,7 +1211,8 @@ async function loadBaselineHistory() {
         if (
             !Array.isArray(
                 data
-            ) ||
+            )
+            ||
             data.length === 0
         ) {
 
@@ -729,6 +1226,7 @@ async function loadBaselineHistory() {
             data
                 .map(
                     baseline => `
+
                         <div class="${
                             baseline.is_active
                             ? "success"
@@ -736,11 +1234,11 @@ async function loadBaselineHistory() {
                         }">
 
                             <strong>
-                                ${
-                                    escapeHtml(
-                                        baseline.scenario_code
-                                    )
-                                }
+
+                                ${escapeHtml(
+                                    baseline.scenario_code
+                                )}
+
                             </strong>
 
                             — Baseline V${
@@ -754,25 +1252,27 @@ async function loadBaselineHistory() {
                             }
 
                             <div>
-                                ${
-                                    escapeHtml(
-                                        baseline.http_method
-                                    )
-                                }
-                                ${
-                                    escapeHtml(
-                                        baseline.endpoint
-                                    )
-                                }
+
+                                ${escapeHtml(
+                                    baseline.http_method
+                                )}
+
+                                ${escapeHtml(
+                                    baseline.endpoint
+                                )}
+
                             </div>
 
                             <div>
+
                                 Flow stored:
+
                                 ${
                                     baseline.endpoint_flow
                                     ? "YES"
                                     : "NO"
                                 }
+
                             </div>
 
                         </div>
@@ -790,53 +1290,6 @@ async function loadBaselineHistory() {
 }
 
 
-function renderError(
-    message
-) {
-
-    return `
-        <div class="danger">
-            ${escapeHtml(message)}
-        </div>
-    `;
-}
-
-
-function escapeHtml(
-    value
-) {
-
-    if (
-        value === null ||
-        value === undefined
-    ) {
-        return "";
-    }
-
-    return String(value)
-        .replaceAll(
-            "&",
-            "&amp;"
-        )
-        .replaceAll(
-            "<",
-            "&lt;"
-        )
-        .replaceAll(
-            ">",
-            "&gt;"
-        )
-        .replaceAll(
-            '"',
-            "&quot;"
-        )
-        .replaceAll(
-            "'",
-            "&#039;"
-        );
-}
-
-
 async function generateFlowchart() {
 
     const method =
@@ -847,12 +1300,22 @@ async function generateFlowchart() {
     const endpoint =
         document.getElementById(
             "chartEndpoint"
-        ).value.trim();
+        ).value;
 
     const container =
         document.getElementById(
             "flowchartResult"
         );
+
+    if (!endpoint) {
+
+        container.innerHTML =
+            renderError(
+                "Please select an endpoint."
+            );
+
+        return;
+    }
 
     container.innerHTML =
         "Generating flowchart...";
@@ -871,7 +1334,9 @@ async function generateFlowchart() {
             );
 
         const response =
-            await fetch(url);
+            await fetch(
+                url
+            );
 
         const data =
             await response.json();
@@ -905,6 +1370,7 @@ async function generateFlowchart() {
             </div>
 
             <details>
+
                 <summary>
                     Mermaid Source
                 </summary>
@@ -914,6 +1380,7 @@ ${escapeHtml(
     data.mermaid
 )}
                 </pre>
+
             </details>
             `;
 
@@ -924,7 +1391,8 @@ ${escapeHtml(
 
         const result =
             await window.mermaid.render(
-                diagramId + "-svg",
+                diagramId
+                + "-svg",
                 data.mermaid
             );
 
@@ -938,4 +1406,57 @@ ${escapeHtml(
                 error.message
             );
     }
+}
+
+
+function renderError(
+    message
+) {
+
+    return `
+        <div class="danger">
+            ${escapeHtml(
+                message
+            )}
+        </div>
+    `;
+}
+
+
+function escapeHtml(
+    value
+) {
+
+    if (
+        value === null
+        ||
+        value === undefined
+    ) {
+
+        return "";
+    }
+
+    return String(
+        value
+    )
+        .replaceAll(
+            "&",
+            "&amp;"
+        )
+        .replaceAll(
+            "<",
+            "&lt;"
+        )
+        .replaceAll(
+            ">",
+            "&gt;"
+        )
+        .replaceAll(
+            '"',
+            "&quot;"
+        )
+        .replaceAll(
+            "'",
+            "&#039;"
+        );
 }
